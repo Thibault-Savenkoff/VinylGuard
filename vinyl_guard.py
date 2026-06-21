@@ -183,12 +183,13 @@ _STRINGS = {
 
 
 def _detect_lang():
-    v = os.environ.get("VINYLGUARD_LANG", "").lower()[:2]
-    if v in _STRINGS:
-        return v
+    for var in ("VINYLGUARD_LANG", "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        val = os.environ.get(var, "").lower()[:2]
+        if val in _STRINGS:
+            return val
     try:
         import locale
-        loc = locale.getdefaultlocale()[0] or ""
+        loc = locale.getlocale()[0] or ""
         return "fr" if loc.lower().startswith("fr") else "en"
     except Exception:
         return "en"
