@@ -189,6 +189,7 @@ def _detect_lang():
             return val
     try:
         import locale
+        locale.setlocale(locale.LC_ALL, "")
         loc = locale.getlocale()[0] or ""
         return "fr" if loc.lower().startswith("fr") else "en"
     except Exception:
