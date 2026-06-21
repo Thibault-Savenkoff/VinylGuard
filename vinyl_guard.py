@@ -183,10 +183,9 @@ _STRINGS = {
 
 
 def _detect_lang():
-    for var in ("VINYLGUARD_LANG", "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
-        val = os.environ.get(var, "").lower()[:2]
-        if val in _STRINGS:
-            return val
+    v = os.environ.get("VINYLGUARD_LANG", "").lower()[:2]
+    if v in _STRINGS:
+        return v
     try:
         import locale
         locale.setlocale(locale.LC_ALL, "")
