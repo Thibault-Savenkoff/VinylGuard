@@ -11,8 +11,9 @@ Run the script, drop the needle — it identifies the track, calculates the time
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) installed
 - A microphone connected to the PC (picks up sound from the turntable)
 - Internet connection (Shazam + MusicBrainz)
+- **macOS:** microphone permission granted to your terminal app (the script will prompt on first run)
 
-Python 3.12 and all dependencies (`sounddevice`, `numpy`, `shazamio`, `requests`) are managed automatically by `uv`.
+Python 3.12 and all dependencies (`sounddevice`, `numpy`, `shazamio`, `requests`, `simple-localize`, and `pyobjc-framework-AVFoundation` on macOS) are managed automatically by `uv`.
 
 ---
 
@@ -64,7 +65,7 @@ The track title updates in real time as the side plays.
 
 ### If Shazam fails to identify (obscure vinyl, no connection)
 
-The script prompts for the remaining duration in `MM:SS`.
+The script retries up to 3 times with a fresh recording, then prompts for the remaining duration in `MM:SS`.
 
 ### Manual start
 
@@ -109,7 +110,7 @@ AUDIO_THRESH = 0.02            # mic sensitivity (increase if false starts)
 SHAZAM_SECS  = 15             # listening duration for identification
 ```
 
-**Language:** English by default. Set `VINYLGUARD_LANG=fr` for French.
+**Language:** Auto-detected from your system locale. Translations live in `translations.json`.
 
 ---
 

@@ -1,0 +1,174 @@
+{
+  "wait_msg": {
+    "en": "Waiting for music — place the needle on the record...",
+    "fr": "En attente de musique — posez l'aiguille sur le vinyle..."
+  },
+  "wait_hint": {
+    "en": "[Enter] start now  [Q] quit",
+    "fr": "[Entrée] démarrer maintenant  [Q] quitter"
+  },
+  "detected": {
+    "en": "\nMusic detected!",
+    "fr": "\nMusique détectée!"
+  },
+  "mic_err": {
+    "en": "\nMic error: {e}",
+    "fr": "\nErreur micro: {e}"
+  },
+  "mic_silent": {
+    "en": "⚠  Microphone silent — check macOS System Settings → Privacy → Microphone.",
+    "fr": "⚠  Microphone silencieux — vérifiez Réglages Système → Confidentialité → Microphone."
+  },
+  "shazam_err": {
+    "en": "Shazam error: {e}",
+    "fr": "Erreur Shazam: {e}"
+  },
+  "identifying": {
+    "en": "Identifying ({secs}s)...",
+    "fr": "Identification en cours ({secs}s)..."
+  },
+  "shazam_fail": {
+    "en": "Shazam identification failed.",
+    "fr": "Identification Shazam échouée."
+  },
+  "shazam_retry": {
+    "en": "Retrying ({attempt}/{total})...",
+    "fr": "Nouvelle tentative ({attempt}/{total})..."
+  },
+  "identified": {
+    "en": "Identified : {artist} — {title}",
+    "fr": "Identifié  : {artist} — {title}"
+  },
+  "album_suffix": {
+    "en": "  ({album})",
+    "fr": "  ({album})"
+  },
+  "position": {
+    "en": "Position   : {mm}:{ss:02d} into track",
+    "fr": "Position   : {mm}:{ss:02d} dans le morceau"
+  },
+  "search_mb": {
+    "en": "Searching tracklist (MusicBrainz)...",
+    "fr": "Recherche de la tracklist (MusicBrainz)..."
+  },
+  "new_catalog": {
+    "en": "\nNew catalog entry for: {artist} — {album}",
+    "fr": "\nNouveau catalogue pour : {artist} — {album}"
+  },
+  "saved": {
+    "en": "  Saved: {name}",
+    "fr": "  Sauvegardé : {name}"
+  },
+  "track_left": {
+    "en": "Current track remaining: ~{mm}:{ss:02d}  [{source}]",
+    "fr": "Restant dans ce morceau : ≈{mm}:{ss:02d}  [{source}]"
+  },
+  "no_tracklist": {
+    "en": "Tracklist not found.",
+    "fr": "Tracklist introuvable."
+  },
+  "side_left": {
+    "en": "Side remaining: {mm}:{ss:02d}",
+    "fr": "Temps restant sur la face : {mm}:{ss:02d}"
+  },
+  "modify_hint": {
+    "en": "[M] adjust  (starting in 5s...)",
+    "fr": "[M] modifier  (démarrage dans 5s...)"
+  },
+  "warn_60": {
+    "en": "⚠  1 minute left — get ready!",
+    "fr": "⚠  1 minute restante — préparez-vous!"
+  },
+  "warn_30": {
+    "en": "⚠  30 seconds left!",
+    "fr": "⚠  30 secondes restantes!"
+  },
+  "warn_10": {
+    "en": "🔴 LIFT THE NEEDLE — 10 seconds!",
+    "fr": "🔴 RETIREZ L'AIGUILLE — 10 secondes!"
+  },
+  "done": {
+    "en": "\r⏹  {label} — done!\u001b[K",
+    "fr": "\r⏹  {label} — terminé !\u001b[K"
+  },
+  "playing": {
+    "en": "\r▶  {label} — {mm:02d}:{ss:02d} left\u001b[K",
+    "fr": "\r▶  {label} — {mm:02d}:{ss:02d} restant\u001b[K"
+  },
+  "stopped": {
+    "en": "\r⏸  Stopped.\u001b[K",
+    "fr": "\r⏸  Arrêté.\u001b[K"
+  },
+  "dur_prompt": {
+    "en": "Side remaining (MM:SS): ",
+    "fr": "Durée restante sur la face (MM:SS) : "
+  },
+  "dur_hint": {
+    "en": "  Format: MM:SS (e.g. 22:03) or seconds",
+    "fr": "  Format attendu : MM:SS (ex: 22:03) ou secondes"
+  },
+  "next_side": {
+    "en": "\n[Enter] next side  [Q] main menu",
+    "fr": "\n[Entrée] nouvelle face  [Q] menu principal"
+  },
+  "menu": {
+    "en": "\n[1] Start    [2] Add album to catalog    [Q] Quit",
+    "fr": "\n[1] Lancer    [2] Ajouter un album    [Q] Quitter"
+  },
+  "add_title": {
+    "en": "\n── Add album to catalog ──",
+    "fr": "\n── Ajouter un album au catalogue ──"
+  },
+  "artist_in": {
+    "en": "Artist: ",
+    "fr": "Artiste : "
+  },
+  "album_in": {
+    "en": "Album:  ",
+    "fr": "Album   : "
+  },
+  "search_msg": {
+    "en": "Searching MusicBrainz...",
+    "fr": "Recherche sur MusicBrainz..."
+  },
+  "found": {
+    "en": "Album found: {title}  ({n} tracks)",
+    "fr": "Album trouvé : {title}  ({n} pistes)"
+  },
+  "not_found": {
+    "en": "Album not found on MusicBrainz. Check the spelling.",
+    "fr": "Album introuvable sur MusicBrainz. Vérifiez l'orthographe."
+  },
+  "already": {
+    "en": "This album is already in the catalog.",
+    "fr": "Cet album est déjà dans le catalogue."
+  },
+  "cb_hint": {
+    "en": "  Up/Down: navigate   Enter: check+advance   Tab: confirm",
+    "fr": "  Haut/Bas: naviguer   Entree: cocher+avancer   Tab: valider"
+  },
+  "face_header": {
+    "en": "\nSide {label}  ({n} tracks remaining)",
+    "fr": "\nFace {label}  ({n} pistes restantes)"
+  },
+  "face_prompt": {
+    "en": "  Check tracks on side {label}:",
+    "fr": "  Cochez les pistes de la face {label} :"
+  },
+  "label_now": {
+    "en": "Side in progress",
+    "fr": "Face en cours"
+  },
+  "src_catalog": {
+    "en": "catalog",
+    "fr": "catalogue"
+  },
+  "src_new": {
+    "en": "new catalog",
+    "fr": "catalogue (nouveau)"
+  },
+  "mb_err": {
+    "en": "MusicBrainz: {e}",
+    "fr": "MusicBrainz: {e}"
+  }
+}

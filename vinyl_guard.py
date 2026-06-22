@@ -1,11 +1,10 @@
 # /// script
 # requires-python = ">=3.12,<3.13"
-# dependencies = ["sounddevice", "numpy", "shazamio", "requests"]
+# dependencies = ["sounddevice", "numpy", "shazamio", "requests", "simple-localize", "pyobjc-framework-AVFoundation; sys_platform == 'darwin'"]
 # ///
 """VinylGuard — automatic end-of-side alert for manual turntables.
 
 Run with: uv run vinyl_guard.py
-Set VINYLGUARD_LANG=fr for French UI.
 """
 
 import asyncio
@@ -23,6 +22,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import numpy as np
 import requests
+import simple_localize
 import sounddevice as sd
 
 # ── Cross-platform keyboard & beep ────────────────────────────────────────────
@@ -92,115 +92,11 @@ CATALOG_DIR  = Path(__file__).parent / "catalog"
 
 # ── Localisation ──────────────────────────────────────────────────────────────
 
-_STRINGS = {
-    "en": {
-        "wait_msg":     "Waiting for music — place the needle on the record...",
-        "wait_hint":    "[Enter] start now  [Q] quit",
-        "detected":     "\nMusic detected!",
-        "mic_err":      "\nMic error: {e}",
-        "shazam_err":   "Shazam error: {e}",
-        "identifying":  "Identifying ({secs}s)...",
-        "shazam_fail":  "Shazam identification failed.",
-        "identified":   "Identified : {artist} — {title}",
-        "album_suffix": "  ({album})",
-        "position":     "Position   : {mm}:{ss:02d} into track",
-        "search_mb":    "Searching tracklist (MusicBrainz)...",
-        "new_catalog":  "\nNew catalog entry for: {artist} — {album}",
-        "saved":        "  Saved: {name}",
-        "track_left":   "Current track remaining: ~{mm}:{ss:02d}  [{source}]",
-        "no_tracklist": "Tracklist not found.",
-        "side_left":    "Side remaining: {mm}:{ss:02d}",
-        "modify_hint":  "[M] adjust  (starting in 5s...)",
-        "warn_60":      "⚠  1 minute left — get ready!",
-        "warn_30":      "⚠  30 seconds left!",
-        "warn_10":      "🔴 LIFT THE NEEDLE — 10 seconds!",
-        "done":         "\r⏹  {label} — done!\033[K",
-        "playing":      "\r▶  {label} — {mm:02d}:{ss:02d} left\033[K",
-        "stopped":      "\r⏸  Stopped.\033[K",
-        "dur_prompt":   "Side remaining (MM:SS): ",
-        "dur_hint":     "  Format: MM:SS (e.g. 22:03) or seconds",
-        "next_side":    "\n[Enter] next side  [Q] main menu",
-        "menu":         "\n[1] Start    [2] Add album to catalog    [Q] Quit",
-        "add_title":    "\n── Add album to catalog ──",
-        "artist_in":    "Artist: ",
-        "album_in":     "Album:  ",
-        "search_msg":   "Searching MusicBrainz...",
-        "found":        "Album found: {title}  ({n} tracks)",
-        "not_found":    "Album not found on MusicBrainz. Check the spelling.",
-        "already":      "This album is already in the catalog.",
-        "cb_hint":      "  Up/Down: navigate   Enter: check+advance   Tab: confirm",
-        "face_header":  "\nSide {label}  ({n} tracks remaining)",
-        "face_prompt":  "  Check tracks on side {label}:",
-        "label_now":    "Side in progress",
-        "src_catalog":  "catalog",
-        "src_new":      "new catalog",
-        "mb_err":       "MusicBrainz: {e}",
-    },
-    "fr": {
-        "wait_msg":     "En attente de musique — posez l'aiguille sur le vinyle...",
-        "wait_hint":    "[Entrée] démarrer maintenant  [Q] quitter",
-        "detected":     "\nMusique détectée!",
-        "mic_err":      "\nErreur micro: {e}",
-        "shazam_err":   "Erreur Shazam: {e}",
-        "identifying":  "Identification en cours ({secs}s)...",
-        "shazam_fail":  "Identification Shazam échouée.",
-        "identified":   "Identifié  : {artist} — {title}",
-        "album_suffix": "  ({album})",
-        "position":     "Position   : {mm}:{ss:02d} dans le morceau",
-        "search_mb":    "Recherche de la tracklist (MusicBrainz)...",
-        "new_catalog":  "\nNouveau catalogue pour : {artist} — {album}",
-        "saved":        "  Sauvegardé : {name}",
-        "track_left":   "Restant dans ce morceau : ≈{mm}:{ss:02d}  [{source}]",
-        "no_tracklist": "Tracklist introuvable.",
-        "side_left":    "Temps restant sur la face : {mm}:{ss:02d}",
-        "modify_hint":  "[M] modifier  (démarrage dans 5s...)",
-        "warn_60":      "⚠  1 minute restante — préparez-vous!",
-        "warn_30":      "⚠  30 secondes restantes!",
-        "warn_10":      "🔴 RETIREZ L'AIGUILLE — 10 secondes!",
-        "done":         "\r⏹  {label} — terminé !\033[K",
-        "playing":      "\r▶  {label} — {mm:02d}:{ss:02d} restant\033[K",
-        "stopped":      "\r⏸  Arrêté.\033[K",
-        "dur_prompt":   "Durée restante sur la face (MM:SS) : ",
-        "dur_hint":     "  Format attendu : MM:SS (ex: 22:03) ou secondes",
-        "next_side":    "\n[Entrée] nouvelle face  [Q] menu principal",
-        "menu":         "\n[1] Lancer    [2] Ajouter un album    [Q] Quitter",
-        "add_title":    "\n── Ajouter un album au catalogue ──",
-        "artist_in":    "Artiste : ",
-        "album_in":     "Album   : ",
-        "search_msg":   "Recherche sur MusicBrainz...",
-        "found":        "Album trouvé : {title}  ({n} pistes)",
-        "not_found":    "Album introuvable sur MusicBrainz. Vérifiez l'orthographe.",
-        "already":      "Cet album est déjà dans le catalogue.",
-        "cb_hint":      "  Haut/Bas: naviguer   Entree: cocher+avancer   Tab: valider",
-        "face_header":  "\nFace {label}  ({n} pistes restantes)",
-        "face_prompt":  "  Cochez les pistes de la face {label} :",
-        "label_now":    "Face en cours",
-        "src_catalog":  "catalogue",
-        "src_new":      "catalogue (nouveau)",
-        "mb_err":       "MusicBrainz: {e}",
-    },
-}
-
-
-def _detect_lang():
-    v = os.environ.get("VINYLGUARD_LANG", "").lower()[:2]
-    if v in _STRINGS:
-        return v
-    try:
-        import locale
-        locale.setlocale(locale.LC_ALL, "")
-        loc = locale.getlocale()[0] or ""
-        return "fr" if loc.lower().startswith("fr") else "en"
-    except Exception:
-        return "en"
-
-
-LANG = _detect_lang()
+simple_localize.init_localizer(str(Path(__file__).parent / "translations.json"))
 
 
 def _t(key, **kw):
-    s = _STRINGS.get(LANG, _STRINGS["en"]).get(key) or _STRINGS["en"].get(key, key)
-    return s.format(**kw) if kw else s
+    return simple_localize.get_text(key, **kw)
 
 
 # ── Audio detection ───────────────────────────────────────────────────────────
@@ -244,6 +140,11 @@ def record_audio(seconds):
 # ── Shazam identification ─────────────────────────────────────────────────────
 
 def shazam_identify(audio_array):
+    rms = float(np.sqrt(np.mean(audio_array.astype(np.float32) ** 2))) / 32768
+    if rms < 0.001:
+        print(_t("mic_silent"))
+        return None
+
     import warnings
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=SyntaxWarning)
@@ -324,7 +225,8 @@ def _side_remaining_ms(tracks, idx):
 
 def _media_to_flat(media):
     return [
-        {"title": t.get("title", ""), "duration": (t.get("length") or 0) // 1000}
+        {"title": t.get("title", ""),
+         "duration": (t.get("length") or t.get("recording", {}).get("length") or 0) // 1000}
         for medium in media
         for t in medium.get("tracks", [])
     ]
@@ -349,10 +251,10 @@ def checkbox_select(items, prompt):
             arrow = ">" if i == cursor else " "
             title = item["title"][:36]
             lines.append(f"  {arrow} [{mark}] {i + 1:>2}. {title:<36} {mm}:{ss:02d}")
-        content = "\n".join(lines)
+        content = "\r\n".join(lines)
         if not first:
-            print(f"\033[{H + n}A", end="")
-        print(content, flush=True)
+            print(f"\r\033[{H + n}A", end="")
+        print(content, end="\r\n", flush=True)
         first = False
 
     _render()
@@ -695,10 +597,17 @@ def _run_detector():
         except (SystemExit, KeyboardInterrupt):
             return
 
-        print(_t("identifying", secs=SHAZAM_SECS))
-        audio = record_audio(SHAZAM_SECS)
+        MAX_ATTEMPTS = 3
+        result = None
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            print(_t("identifying", secs=SHAZAM_SECS))
+            audio  = record_audio(SHAZAM_SECS)
+            result = shazam_identify(audio)
+            if result:
+                break
+            if attempt < MAX_ATTEMPTS:
+                print(_t("shazam_retry", attempt=attempt, total=MAX_ATTEMPTS))
 
-        result               = shazam_identify(audio)
         remaining_tracks     = None
         tracks_for_countdown = None
 
@@ -778,7 +687,35 @@ def _run_detector():
             break
 
 
+def _check_mic():
+    if sys.platform == "darwin":
+        import threading
+        try:
+            from AVFoundation import AVCaptureDevice, AVMediaTypeAudio
+            from Foundation import NSRunLoop, NSDate
+            done = threading.Event()
+            def _cb(_):
+                done.set()
+            AVCaptureDevice.requestAccessForMediaType_completionHandler_(AVMediaTypeAudio, _cb)
+            deadline = time.time() + 35
+            while not done.is_set() and time.time() < deadline:
+                NSRunLoop.currentRunLoop().runUntilDate_(NSDate.dateWithTimeIntervalSinceNow_(0.05))
+        except Exception:
+            pass
+    try:
+        probe = sd.rec(int(0.5 * SAMPLE_RATE), samplerate=SAMPLE_RATE, channels=1, dtype="int16")
+        sd.wait()
+    except Exception as e:
+        print(_t("mic_err", e=e))
+        raise SystemExit(1)
+    rms = float(np.sqrt(np.mean(probe.astype(np.float32) ** 2))) / 32768
+    if rms < 0.0001:
+        print(_t("mic_silent"))
+        raise SystemExit(1)
+
+
 def main():
+    _check_mic()
     print("\nVinylGuard")
     print("══════════════════════════════")
 
