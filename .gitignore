@@ -4,3 +4,4 @@ __pycache__/
 catalog/*.json
 .claude/
 graphify-out/
+.vscode/*
