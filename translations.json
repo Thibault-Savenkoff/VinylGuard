@@ -170,5 +170,9 @@
   "mb_err": {
     "en": "MusicBrainz: {e}",
     "fr": "MusicBrainz: {e}"
+  },
+  "catalog_list_title": {
+    "en": "Existing catalog entries:",
+    "fr": "Entrées existantes dans le catalogue:"
   }
 }
