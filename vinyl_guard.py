@@ -409,11 +409,15 @@ def _slugify(s):
     return re.sub(r"[^\w]+", "_", s.lower()).strip("_")[:60]
 
 
+def _norm_apostrophes(s):
+    return s.replace("’", "'").replace("‘", "'")
+
+
 def _find_in_sides(sides, title):
-    t_low = title.lower()
+    t_low = _norm_apostrophes(title.lower())
     for tracks in sides.values():
         for i, track in enumerate(tracks):
-            tl = track.get("title", "").lower()
+            tl = _norm_apostrophes(track.get("title", "").lower())
             if t_low in tl or tl in t_low:
                 remaining = sum(t.get("duration", 0) for t in tracks[i:])
                 return (remaining, track.get("duration", 0), tracks[i:])
@@ -568,6 +572,14 @@ def mb_fetch_album_tracks(artist, album):
 
 def add_to_catalog():
     print(_t("add_title"))
+    print(_t("catalog_list_title"))
+    if CATALOG_DIR.exists():
+        for f in sorted(CATALOG_DIR.glob("*.json")):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                print(f"  - {data.get('artist', '?')} - {data.get('album', '?')}")
+            except Exception:
+                continue
     try:
         artist = input(_t("artist_in")).strip()
         album  = input(_t("album_in")).strip()
