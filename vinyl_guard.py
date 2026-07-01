@@ -331,7 +331,14 @@ def _scan_media(media, *, by_id=None, by_title=None):
 
 
 def get_remaining_on_side(artist, title, isrc, album=""):
-    album = _clean_album(album)
+    album_clean = _clean_album(album)
+    result = _get_remaining(artist, title, isrc, album)
+    if result is None and album_clean != album:
+        result = _get_remaining(artist, title, isrc, album_clean)
+    return result
+
+
+def _get_remaining(artist, title, isrc, album=""):
     try:
         recording_id = None
 
