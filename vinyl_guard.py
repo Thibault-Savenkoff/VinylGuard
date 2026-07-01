@@ -383,6 +383,11 @@ def _get_remaining(artist, title, isrc, album=""):
                 })
                 recs = data.get("recordings", [])
             if not recs:
+                # Fallback for compilations/soundtracks where MB artist differs
+                time.sleep(1)
+                data = _mb_get("recording/", {"query": f'recording:"{title}"', "limit": 5})
+                recs = data.get("recordings", [])
+            if not recs:
                 return None
             recording_id = recs[0]["id"]
 
