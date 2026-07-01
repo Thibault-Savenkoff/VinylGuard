@@ -452,19 +452,12 @@ def _words(s):
 def catalog_lookup(artist, album, title):
     if not CATALOG_DIR.exists():
         return None
-    album    = _clean_album(album)
-    a_low    = artist.lower()
-    al_low   = album.lower()
-    a_words  = _words(artist)
+    al_low = _clean_album(album).lower()
     for f in sorted(CATALOG_DIR.glob("*.json")):
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
-            da  = data.get("artist", "").lower()
-            dab = data.get("album",  "").lower()
-            artist_ok = (a_low in da or da in a_low
-                         or bool(a_words & _words(da)))
-            album_ok  = (al_low in dab or dab in al_low)
-            if not artist_ok or not album_ok:
+            dab = _clean_album(data.get("album", "")).lower()
+            if al_low not in dab and dab not in al_low:
                 continue
             result = _find_in_sides(data.get("sides", {}), title)
             if result:
