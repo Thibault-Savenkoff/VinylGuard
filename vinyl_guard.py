@@ -352,12 +352,17 @@ def _get_remaining(artist, title, isrc, album=""):
                 pass
 
         if album:
-            time.sleep(1)
-            data = _mb_get("release/", {
-                "query": f'release:"{album}" AND artist:"{artist}" AND format:Vinyl',
-                "limit": 3,
-            })
-            for rel in data.get("releases", [])[:2]:
+            releases_vinyl = []
+            for fmt in ('Vinyl', '"2x12"', '"12"'):
+                time.sleep(1)
+                data = _mb_get("release/", {
+                    "query": f'release:"{album}" AND artist:"{artist}" AND format:{fmt}',
+                    "limit": 3,
+                })
+                releases_vinyl = data.get("releases", [])
+                if releases_vinyl:
+                    break
+            for rel in releases_vinyl[:2]:
                 try:
                     time.sleep(1)
                     rel_data = _mb_get(f"release/{rel['id']}", {"inc": "recordings+media"})
@@ -591,6 +596,8 @@ def mb_fetch_album_tracks(artist, album):
         releases = []
         for query in [
             f'release:"{album}" AND artist:"{artist}" AND format:Vinyl',
+            f'release:"{album}" AND artist:"{artist}" AND format:"2x12"',
+            f'release:"{album}" AND artist:"{artist}" AND format:"12"',
             f'release:"{album}" AND artist:"{artist}"',
         ]:
             time.sleep(1)
