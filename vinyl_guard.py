@@ -331,6 +331,7 @@ def _scan_media(media, *, by_id=None, by_title=None):
 
 
 def get_remaining_on_side(artist, title, isrc, album=""):
+    album = _clean_album(album)
     try:
         recording_id = None
 
@@ -404,6 +405,14 @@ def get_remaining_on_side(artist, title, isrc, album=""):
 
 
 # ── Local catalog ─────────────────────────────────────────────────────────────
+
+def _clean_album(s):
+    """Strip edition qualifiers that Shazam adds but vinyl releases don't have."""
+    return re.sub(
+        r'\s*\((?:extended|deluxe|special|limited|bonus|remaster\w*)[^)]*\)',
+        '', s, flags=re.IGNORECASE,
+    ).strip()
+
 
 def _slugify(s):
     return re.sub(r"[^\w]+", "_", s.lower()).strip("_")[:60]
@@ -548,6 +557,7 @@ def _confirm_or_override(remaining):
 # ── Main loop ─────────────────────────────────────────────────────────────────
 
 def mb_fetch_album_tracks(artist, album):
+    album = _clean_album(album)
     try:
         releases = []
         for query in [
