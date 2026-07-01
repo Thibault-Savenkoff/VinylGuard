@@ -467,6 +467,22 @@ def catalog_lookup(artist, album, title):
     return None
 
 
+def catalog_has_album(album):
+    """True if any catalog file already covers this album."""
+    if not CATALOG_DIR.exists():
+        return False
+    al_low = _clean_album(album).lower()
+    for f in CATALOG_DIR.glob("*.json"):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            dab  = _clean_album(data.get("album", "")).lower()
+            if al_low in dab or dab in al_low:
+                return True
+        except Exception:
+            continue
+    return False
+
+
 def catalog_save(artist, album, sides):
     CATALOG_DIR.mkdir(exist_ok=True)
     path = CATALOG_DIR / f"{_slugify(artist)}_{_slugify(album)}.json"
@@ -666,7 +682,7 @@ def _run_detector():
             lookup = catalog_lookup(artist, album, title)
             source = _t("src_catalog")
 
-            if lookup is None:
+            if lookup is None and not catalog_has_album(album):
                 mb_full = get_remaining_on_side(artist, title, isrc or None, album)
                 if mb_full is not None:
                     remaining_mb, track_secs_mb, media = mb_full
