@@ -610,23 +610,43 @@ def _confirm_or_override(remaining):
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
 
+def _release_label(rel):
+    media = rel.get("media") or []
+    fmt = "/".join(sorted({m.get("format") or "?" for m in media}))
+    n = sum(m.get("track-count") or 0 for m in media)
+    bits = [rel.get("title", "?"), fmt, f"{n} pistes"]
+    for k in ("date", "country"):
+        if rel.get(k):
+            bits.append(str(rel[k]))
+    return "  |  ".join(bits)
+
+
 def mb_fetch_album_tracks(artist, album):
-    album = _clean_album(album)
     try:
-        releases = []
-        for query in [
-            f'release:"{album}" AND artist:"{artist}" AND format:Vinyl',
-            f'release:"{album}" AND artist:"{artist}" AND format:"2x12"',
-            f'release:"{album}" AND artist:"{artist}" AND format:"12"',
-            f'release:"{album}" AND artist:"{artist}"',
-        ]:
-            data = _mb_get("release/", {"query": query, "limit": 3})
-            releases = data.get("releases", [])
-            if releases:
-                break
+        releases, seen = [], set()
+        for title in dict.fromkeys([album, _clean_album(album)]):
+            query = f'release:"{title}" AND artist:"{artist}"'
+            for rel in _mb_get("release/", {"query": query, "limit": 25}).get("releases", []):
+                if rel["id"] not in seen:
+                    seen.add(rel["id"])
+                    releases.append(rel)
         if not releases:
             return None
+        # ponytail: format:Vinyl ne matche pas ('12" Vinyl'), on trie au lieu de filtrer
+        releases.sort(key=lambda r: not any(
+            "vinyl" in (m.get("format") or "").lower() for m in (r.get("media") or [])))
         rel = releases[0]
+        if len(releases) > 1:
+            print()
+            for i, r in enumerate(releases[:15], 1):
+                print(f"  [{i:2}] {_release_label(r)}")
+            try:
+                choice = input("  Edition (Entree = 1) : ").strip()
+                rel = releases[int(choice) - 1] if choice else releases[0]
+            except (ValueError, IndexError):
+                rel = releases[0]
+            except (KeyboardInterrupt, EOFError):
+                return None
         rel_data = _mb_get(f"release/{rel['id']}", {"inc": "recordings+media"})
         return (rel_data.get("media", []), rel.get("title", album))
     except Exception as e:
