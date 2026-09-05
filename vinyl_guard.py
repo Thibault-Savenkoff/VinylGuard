@@ -22,6 +22,11 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import numpy as np
 import requests
+from requests.adapters import HTTPAdapter, Retry
+
+with contextlib.suppress(ImportError):  # line editing (arrow keys) in input(); absent on Windows
+    import readline  # noqa: F401
+
 import simple_localize
 import sounddevice as sd
 
@@ -192,12 +197,17 @@ def shazam_identify(audio_array):
 
 # ── MusicBrainz ───────────────────────────────────────────────────────────────
 
+_MB = requests.Session()
+_MB.mount("https://", HTTPAdapter(max_retries=Retry(
+    total=3, backoff_factor=1, status_forcelist=(429, 500, 502, 503, 504))))
+
+
 def _mb_get(path, params=None):
-    r = requests.get(
+    r = _MB.get(
         f"https://musicbrainz.org/ws/2/{path}",
         params={"fmt": "json", **(params or {})},
         headers={"User-Agent": MB_AGENT},
-        timeout=10,
+        timeout=30,
     )
     r.raise_for_status()
     return r.json()
