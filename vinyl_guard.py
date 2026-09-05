@@ -9,6 +9,7 @@ Run with: uv run vinyl_guard.py
 
 import asyncio
 import contextlib
+import hashlib
 import json
 import os
 import re
@@ -202,14 +203,26 @@ _MB.mount("https://", HTTPAdapter(max_retries=Retry(
     total=3, backoff_factor=1, status_forcelist=(429, 500, 502, 503, 504))))
 
 
+MB_CACHE_DIR = Path(__file__).parent / ".mb_cache"
+
+
 def _mb_get(path, params=None):
+    params = {"fmt": "json", **(params or {})}
+    # ponytail: cache disque sans expiration (les releases MB ne bougent pas);
+    # rm -rf .mb_cache pour invalider, TTL si un jour ça compte.
+    cache = MB_CACHE_DIR / (hashlib.sha1(
+        f"{path}?{sorted(params.items())}".encode()).hexdigest() + ".json")
+    if cache.exists():
+        return json.loads(cache.read_text(encoding="utf-8"))
     r = _MB.get(
         f"https://musicbrainz.org/ws/2/{path}",
-        params={"fmt": "json", **(params or {})},
+        params=params,
         headers={"User-Agent": MB_AGENT},
         timeout=30,
     )
     r.raise_for_status()
+    MB_CACHE_DIR.mkdir(exist_ok=True)
+    cache.write_text(r.text, encoding="utf-8")
     return r.json()
 
 
