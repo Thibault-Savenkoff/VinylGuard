@@ -83,7 +83,7 @@ VinylGuard builds a personal catalog in the `catalog/` folder. On first play of 
 
 You can also pre-populate the catalog from the menu with **[2] Add album to catalog**.
 
-See `catalog/README.txt` for the JSON format.
+See `CATALOG_FORMAT.txt` for the JSON format.
 
 ---
 
