@@ -204,6 +204,7 @@ _MB.mount("https://", HTTPAdapter(max_retries=Retry(
 
 
 MB_CACHE_DIR = Path(__file__).parent / ".mb_cache"
+_mb_last_call = 0.0
 
 
 def _mb_get(path, params=None):
@@ -214,6 +215,9 @@ def _mb_get(path, params=None):
         f"{path}?{sorted(params.items())}".encode()).hexdigest() + ".json")
     if cache.exists():
         return json.loads(cache.read_text(encoding="utf-8"))
+    global _mb_last_call
+    time.sleep(max(0.0, 1.0 - (time.monotonic() - _mb_last_call)))  # MB: 1 req/s
+    _mb_last_call = time.monotonic()
     r = _MB.get(
         f"https://musicbrainz.org/ws/2/{path}",
         params=params,
@@ -377,7 +381,6 @@ def _get_remaining(artist, title, isrc, album=""):
         if album:
             releases_vinyl = []
             for fmt in ('Vinyl', '"2x12"', '"12"'):
-                time.sleep(1)
                 data = _mb_get("release/", {
                     "query": f'release:"{album}" AND artist:"{artist}" AND format:{fmt}',
                     "limit": 3,
@@ -387,7 +390,6 @@ def _get_remaining(artist, title, isrc, album=""):
                     break
             for rel in releases_vinyl[:2]:
                 try:
-                    time.sleep(1)
                     rel_data = _mb_get(f"release/{rel['id']}", {"inc": "recordings+media"})
                     media  = rel_data.get("media", [])
                     result = _scan_media(media, by_id=recording_id, by_title=title)
@@ -397,14 +399,12 @@ def _get_remaining(artist, title, isrc, album=""):
                     continue
 
         if not recording_id:
-            time.sleep(1)
             query = f'recording:"{title}" AND artist:"{artist}"'
             if album:
                 query += f' AND release:"{album}"'
             data = _mb_get("recording/", {"query": query, "limit": 5})
             recs = data.get("recordings", [])
             if not recs and album:
-                time.sleep(1)
                 data = _mb_get("recording/", {
                     "query": f'recording:"{title}" AND artist:"{artist}"',
                     "limit": 5,
@@ -412,14 +412,12 @@ def _get_remaining(artist, title, isrc, album=""):
                 recs = data.get("recordings", [])
             if not recs:
                 # Fallback for compilations/soundtracks where MB artist differs
-                time.sleep(1)
                 data = _mb_get("recording/", {"query": f'recording:"{title}"', "limit": 5})
                 recs = data.get("recordings", [])
             if not recs:
                 return None
             recording_id = recs[0]["id"]
 
-        time.sleep(1)
         data = _mb_get(f"recording/{recording_id}", {"inc": "releases"})
         releases = data.get("releases", [])
         if album:
@@ -430,7 +428,6 @@ def _get_remaining(artist, title, isrc, album=""):
                 releases = filtered
         if not releases:
             return None
-        time.sleep(1)
         data  = _mb_get(f"release/{releases[0]['id']}", {"inc": "recordings+media"})
         media = data.get("media", [])
         result = _scan_media(media, by_id=recording_id, by_title=title)
@@ -623,7 +620,6 @@ def mb_fetch_album_tracks(artist, album):
             f'release:"{album}" AND artist:"{artist}" AND format:"12"',
             f'release:"{album}" AND artist:"{artist}"',
         ]:
-            time.sleep(1)
             data = _mb_get("release/", {"query": query, "limit": 3})
             releases = data.get("releases", [])
             if releases:
@@ -631,7 +627,6 @@ def mb_fetch_album_tracks(artist, album):
         if not releases:
             return None
         rel = releases[0]
-        time.sleep(1)
         rel_data = _mb_get(f"release/{rel['id']}", {"inc": "recordings+media"})
         return (rel_data.get("media", []), rel.get("title", album))
     except Exception as e:
